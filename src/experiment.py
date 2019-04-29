@@ -75,6 +75,35 @@ class Flasher():
         pixels.fill(self.off_color)
         pixels.show()
 
+class Circler():
+    def __init__(self):
+        self.state = 0
+        self.on_color = (0,200,0)
+        self.off_color = (0,0,0)
+        self.delay = 0.001
+        self.isOn = False
+        self.isClosed = False
+
+    def beat(self):
+        if self.isClosed:
+           return
+        self.state = self.state+1
+          
+        self.isOn = not self.isOn
+        if self.isOn:
+            pixels.fill(self.flash_color)
+        else:
+            pixels.fill(self.off_color)
+        pixels.show()
+        time.sleep(self.delay)
+    
+    def close(self):
+        pixels.fill(self.on_color)
+        self.isOn = False
+        self.isClosed = True
+        pixels.fill(self.off_color)
+        pixels.show()
+
 class Crasher():
     def __init__(self,velocity):
         self.num_splotches = 10
