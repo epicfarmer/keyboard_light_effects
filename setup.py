@@ -13,6 +13,8 @@ setuptools.setup(
   url="https://github.com/jkaminsk7/kfx",
   packages = setuptools.find_packages(),
   classifiers=[
+    "Development Status :: 3 - Alpha",
+    "Indended Audience :: Hobbyists",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: Raspbian"
