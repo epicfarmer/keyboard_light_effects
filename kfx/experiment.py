@@ -13,6 +13,7 @@ import NoEffect as ne
 import FlashEffect as fe
 import CrashEffect as cre
 import CircleEffect as cie
+import Modes as mode
 
 dev = rtmidi.RtMidiIn()
 collectors = []
@@ -39,12 +40,6 @@ class Collector(threading.Thread):
         self.quit = False
         self.circle_state = 0
 
-    def spread(self,value, max, start, end):
-        return start + (value/max)*(end-start)
-
-    def spread_acc(self,value, max, start, end, acc):
-        return start + math.pow(value/max, acc)*(end-start)
-
     def run(self):
         global effect
         self.device.openPort(self.port)
@@ -63,9 +58,32 @@ class Collector(threading.Thread):
                         effect = cre.CrashEffect(vel,pixels,num_pixels)
                     if note == 68:
                         effect.close()
-                        self.circle_state = self.circle_state + 1
-                        effect = cie.CircleEffect(vel,pixels,num_pixels,self.circle_state)
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,0)
+                    if note == 69:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,1)
+                    if note == 70:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,2)
+                    if note == 71:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,3)
                     if note == 72:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,4)
+                    if note == 73:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,5)
+                    if note == 74:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,6)
+                    if note == 75:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,7)
+                    if note == 76:
+                        effect.close()
+                        effect = cie.CircleEffect(vel,pixels,num_pixels,8)
+                    if note == 77:
                         effect.close()
                         effect = fe.FlashEffect(pixels,num_pixels)
                 if msg.isNoteOff():
@@ -80,7 +98,7 @@ for i in range(dev.getPortCount()):
     print("PORT: " + name)
     
     if "UM-ONE" in name:
-        collector = Collector(device, i)
+        collector = mode.Controller(device, i)
         collector.start()
         collectors.append(collector)
 
