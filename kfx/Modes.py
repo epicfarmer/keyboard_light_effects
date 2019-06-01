@@ -1,9 +1,17 @@
+## NOTES:
+## Every not should have a timeout after which it will turn off if no key replaces it.
+## Every key should have an optional argument to turn off on key release.
+
+## For playing with keyboard
+keyboard_toggle = False
+
 import piplates.RELAYplate as RELAY
 import rtmidi
 import threading
 import board
 import neopixel
 import RPi.GPIO as GPIO
+import numpy as np
 from gpiozero import LED
 
 
@@ -14,6 +22,7 @@ import FlashEffect as fe
 import CrashEffect as cre
 import CircleEffect as cie
 import DictionaryEffect as de
+import FadeMarquisEffect as fme
 
 # Global Variables
 dev = rtmidi.RtMidiIn()
@@ -71,10 +80,6 @@ pinout_dict = [
         21
         ]
 
-key_dict = {
-        'test' : 1
-        }
-
 
 # PINOUT Setup for LEDs
 GPIO.setup(pinout_dict[11],GPIO.OUT) # 0 HIGH
@@ -98,17 +103,228 @@ GPIO.output(pinout_dict[22],0)
 GPIO.output(pinout_dict[23],0)
 GPIO.output(pinout_dict[24],0)
 
-mode0_keymap = {
-        89:{"effect":cie.CircleEffect, "state":0 },
-        82:{"effect":cie.CircleEffect, "state":1 },
-        81:{"effect":cie.CircleEffect, "state":2 },
-        71:{"effect":cie.CircleEffect, "state":3 },
-        67:{"effect":cie.CircleEffect, "state":4 },
-        62:{"effect":cie.CircleEffect, "state":5 },
-        72:{"effect":cie.CircleEffect, "state":6 }
+def index_to_state(index):
+    states = 2**np.arange(32,dtype='int64')
+    return(np.sum(states[index]))
+
+def range_to_state(first,last,skip=1):
+    index = np.arange(first,last,skip)
+    state = index_to_state(index)
+    print("%08X" % state)
+    return(state)
+
+
+#         00000000001111111111222222222233
+#         01234567890123456789012345678901
+#"state":"11000000000000000000000000000011"
+#"state":"0011000000000000000000000000110O"
+#"state":"0000111000000000000000000111000O"
+#"state":"0000000110000000000000011000000O"
+#"state":"0000000001110000000011100000000O"
+#"state":"0000000000001100001100000000000O"
+#"state":"11111111111111111111111111111111"
+
+# This code is an attempt at fitting mode changes into this part
+global_mode_keymap = {
+        108:{"mode":0},
+        107:{"mode":1},
+        106:{"mode":2},
+        105:{"mode":3},
+        104:{"mode":4},
+        103:{"mode":5},
+        102:{"mode":6}
         }
 
-key_maps = [mode0_keymap];
+
+## debug_global_mode
+mode0_keymap = {
+        89:{"effect":de.DictionaryEffect, "args":{"state":"11000000000000000000000000000011","on_color":(255,0,255)} },
+        87:{"effect":de.DictionaryEffect, "args":{"state":"0011000000000000000000000000110O"} },
+        82:{"effect":de.DictionaryEffect, "args":{"state":"0000111000000000000000000111000O"} },
+        81:{"effect":de.DictionaryEffect, "args":{"state":"0000000110000000000000011000000O"} },
+        71:{"effect":de.DictionaryEffect, "args":{"state":"0000000001110000000011100000000O"} },
+        67:{"effect":de.DictionaryEffect, "args":{"state":"0000000000001100001100000000000O"} },
+        69:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111"} }
+        }
+
+mode1_keymap = {
+        72:{"effect":de.DictionaryEffect, "args":{"state":"00001111111100000000111111110000"} },
+        80:{"effect":de.DictionaryEffect, "args":{"state":"11111111000000001111111100000000"} },
+        68:{"effect":de.DictionaryEffect, "args":{"state":"00000000111111110000000011111111"} },
+        77:{"effect":de.DictionaryEffect, "args":{"state":"11110000000011111111000000001111"} },
+        79:{
+            "effect":fme.FadeMarquisEffect,
+            "args":{
+                "transition_time" : 3.5,
+                "color1" : (155,255,155),
+                "color2" : (0,0,0)
+                } 
+            }
+        }
+
+mode2_keymap = {
+        98:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"01000000000000100000100000100010",
+                "on_color":(0,125,0)
+                }
+            },
+        97:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"01000100000100100010100010100010",
+                "on_color":(0,110,50)
+                }
+            },
+        94:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"11010100001100100010100110101010",
+                "on_color":(0,100,80)
+                }
+            },
+        84:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"11010101001100101110100110101110",
+                "on_color":(0,80,100)
+                }
+            },
+        83:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"11011101101110101110101110111110",
+                "on_color":(0,50,110)
+                }
+            },
+        82:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"11011111101110111110111111111110",
+                "on_color":(0,0,125)
+                }
+            },
+        72:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"11111111111111111111111111111111",
+                "on_color":(255,0,0)
+                }
+            }
+        }
+
+mode3_keymap = {
+        69:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"10000000000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        74:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"01000000000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        79:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"00100000000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        82:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"00010000000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        80:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"00001000000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        85:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"00000100000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        65:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"00000010000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        68:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"00000001000000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        87:{
+            "effect":de.DictionaryEffect,
+            "args":{
+                "state":"00000000100000000000000000000000",
+                "on_color":(0,125,0)
+                }
+            },
+        59:{
+            "effect":fe.FlashEffect,
+            "args":{
+                "state":"00000000100000000000000000000000",
+                "on_color":(125,125,0)
+                }
+            },
+        50:{
+            "effect":fe.FlashEffect,
+            "args":{
+                "state":"00000000100000000000000000000000",
+                "on_color":(0,125,125)
+                }
+            },
+        }
+
+mode4_keymap = {
+        }
+
+mode5_keymap = {
+        "86": {
+            "effect":cre.CrashEffect,
+            "args":{
+                "state":"00000000100000000000000000000000",
+                "on_color":(0,125,125)
+                }
+            }
+        }
+
+mode6_keymap = {
+
+        }
+
+key_maps = [mode0_keymap,mode1_keymap,mode2_keymap,mode3_keymap,mode4_keymap,mode5_keymap,mode6_keymap];
+
+if keyboard_toggle:
+    key_maps[0] = {
+        89:{"effect":de.DictionaryEffect, "args":{"state":"11000000000000000000000000000011","on_color":(255,0,255)} },
+        79:{
+            "effect":fme.FadeMarquisEffect,
+            "args":{
+                "transition_time" : 3.5,
+                "color1" : (155,255,155),
+                "color2" : (0,0,0)
+            } 
+        }
+    }
 
 
 
@@ -146,9 +362,9 @@ class Controller(threading.Thread):
         old_pin = self.mode_to_pin(self.mode)
         self.mode = d
         pin = self.mode_to_pin(self.mode)
-        print("Activating Mode "+str(d))
-        print("  Old Pin: " +str(old_pin))
-        print("  Pin: " +str(pin))
+        print("Activating Mode " + str(d))
+        print("  Old Pin: " + str(old_pin))
+        print("  Pin: " + str(pin))
 
         self.set_low(old_pin)
         self.set_high(pin)
@@ -168,6 +384,7 @@ class Controller(threading.Thread):
         print(pin)
         if(isinstance(pin,str)):
             return
+
         GPIO.output(pin,0)
 
 
@@ -183,13 +400,12 @@ class Controller(threading.Thread):
                 chn = msg.getChannel()
                 toggle = False
                 if chn == 7:
-                    print(chn)
                     toggle = True
                 if chn == 9:
-                    print(chn)
                     toggle = True
                 if chn == 14:
-                    print(chn)
+                    toggle = True
+                if keyboard_toggle: ## Just for practice with keyboard
                     toggle = True
                 if toggle != True:
                     continue
@@ -201,120 +417,23 @@ class Controller(threading.Thread):
 
     def key_pressed(self,note,vel,mode):
         global effect
-        print(note,vel)
-        #if note == 103:
-            #self.switch_mode(5)
-        #if note == 101:
-            #self.switch_mode(4)
-        #if note == 100:
-            #self.switch_mode(3)
-        #if note == 98:
-            #self.switch_mode(2)
-        #if note == 96:
-            #self.switch_mode(1)
-        #if note == 95:
-            #self.switch_mode(0)
+        print("Note", note,vel)
 
         cur_map = key_maps[self.mode]
+        if note in global_mode_keymap:
+            self.switch_mode(global_mode_keymap[note]["mode"])
         if note in cur_map:
-            cur_efect = cur_map[note]
-            cur_effect.effect(vel, pixels, num_pixels, cur_effect.state)
+            cur_effect = cur_map[note]
+            effect = cur_effect["effect"](vel, pixels, num_pixels, cur_effect["args"])
 
-        if mode == 0:
-            if note == 89:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,0)
-            if note == 87:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,1)
-            if note == 82:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,2)
-            if note == 81:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,3)
-            if note == 71:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,4)
-            if note == 67:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,5)
-            if note == 62:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,6)
-            if note == 72:
-                effect.close()
-                effect = fe.FlashEffect(pixels,num_pixels)
-        if mode == 1:
-            print(note,vel)
-            if note == 67:
-                effect.close()
-                effect = cre.CrashEffect(vel,pixels,num_pixels)
-            if note == 68:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,0)
-            if note == 69:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,1)
-            if note == 70:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,2)
-            if note == 71:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,3)
-            if note == 72:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,4)
-            if note == 73:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,5)
-            if note == 74:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,6)
-            if note == 75:
-                effect.close()
-                effect = cie.CircleEffect(vel,pixels,num_pixels,7)
-            if note == 76:
-                effect.close()
-                effect = fe.FlashEffect(pixels,num_pixels)
-        if mode == 2:
-            print(note,vel)
-            if note == 67:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,30232345)
-            if note == 68:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,0)
-            if note == 69:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,1)
-            if note == 70:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,2)
-            if note == 71:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,3)
-            if note == 72:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,4)
-            if note == 73:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,5)
-            if note == 74:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,6)
-            if note == 75:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,7)
-            if note == 76:
-                effect.close()
-                effect = de.DictionaryEffect(vel,pixels,num_pixels,8)
+
     def key_released(self,note,mode):
         global effect
         effect.close()
         effect = ne.NoEffect(pixels,num_pixels)
 
 effect = ne.NoEffect(pixels,num_pixels)
+
 for i in range(dev.getPortCount()):
     device = rtmidi.RtMidiIn()
     
@@ -332,3 +451,7 @@ while True:
 
 for c in collectors:
     c.quit = True
+
+
+
+
