@@ -4,7 +4,7 @@ import math
 import utils
 
 class CrashEffect():
-    def __init__(self,velocity,pixels,n_pixels):
+    def __init__(self,velocity,pixels,n_pixels,args):
         self.num_splotches = 10
         self.min_width = 10
         self.max_width = 30

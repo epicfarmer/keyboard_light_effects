@@ -3,24 +3,25 @@ import utils
 import math
 
 class DictionaryEffect():
-    def __init__(self,velocity,pixels,n_pixels,state):
+    def __init__(self,velocity,pixels,n_pixels,args):
         self.off_color = (0,0,0)
         self.delay = 0.001
-        self.num_states = 2^32
-        self.state = state
+        self.num_states = 32
         self.isOn = False
         self.isClosed = False
         self.pixels = pixels
         self.n_pixels = n_pixels
-        self.state = self.state % self.num_states
         
-        # self.on_color= (0,self.scaled_val_2,self.scaled_val_1)
-        self.on_color= (255,0,255)
-        self.num_states = self.num_states - 1
+        self.on_color = (155,155,155)
+
+        if "on_color" in args:
+            self.on_color = args["on_color"]
+        if "state" in args:
+            self.state = args["state"]
         
         for i in range(32):
-            if(math.floor(state / (2**i)) % 2 == 1):
-                print(i)
+            if self.state[i] == '1':
+                # print(i)
                 self.segment(i)
         self.pixels.show()
     def segment(self,idx):
@@ -34,7 +35,7 @@ class DictionaryEffect():
     def beat(self):
         if self.isClosed:
            return
-        self.state = self.state+1
+        # self.state = self.state+1
         time.sleep(self.delay)
     
     def close(self):

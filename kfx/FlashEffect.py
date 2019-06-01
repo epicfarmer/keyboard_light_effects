@@ -1,7 +1,7 @@
 import time
 
 class FlashEffect():
-    def __init__(self,pixels,n_pixels):
+    def __init__(self,velocity,pixels,n_pixels,args):
         self.flashing = False
         self.flash_color = (255,150,0)
         self.off_color = (0,0,0)
