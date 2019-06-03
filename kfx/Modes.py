@@ -103,17 +103,6 @@ GPIO.output(pinout_dict[22],0)
 GPIO.output(pinout_dict[23],0)
 GPIO.output(pinout_dict[24],0)
 
-def index_to_state(index):
-    states = 2**np.arange(32,dtype='int64')
-    return(np.sum(states[index]))
-
-def range_to_state(first,last,skip=1):
-    index = np.arange(first,last,skip)
-    state = index_to_state(index)
-    print("%08X" % state)
-    return(state)
-
-
 #         00000000001111111111222222222233
 #         01234567890123456789012345678901
 #"state":"11000000000000000000000000000011"
@@ -126,18 +115,32 @@ def range_to_state(first,last,skip=1):
 
 # This code is an attempt at fitting mode changes into this part
 global_mode_keymap = {
-        108:{"mode":0},
-        107:{"mode":1},
-        106:{"mode":2},
-        105:{"mode":3},
-        104:{"mode":4},
-        103:{"mode":5},
-        102:{"mode":6}
+        60:{"mode":0},
+        61:{"mode":1},
+        62:{"mode":2},
+        63:{"mode":3},
+        64:{"mode":4},
+        65:{"mode":5},
+        66:{"mode":6},
+        67:{"mode":7},
+        68:{"mode":8},
+        69:{"mode":9},
+        70:{"mode":10},
+        71:{"mode":11},
+        72:{"mode":12},
+        73:{"mode":13},
+        74:{"mode":14},
+        75:{"mode":15},
+        76:{"mode":16},
+        77:{"mode":17},
+        78:{"mode":18},
+        79:{"mode":19},
+        80:{"mode":20},
         }
 
 
 ## debug_global_mode
-mode0_keymap = {
+keymap_0 = {
         89:{"effect":de.DictionaryEffect, "args":{"state":"11000000000000000000000000000011","on_color":(255,0,255)} },
         87:{"effect":de.DictionaryEffect, "args":{"state":"0011000000000000000000000000110O"} },
         82:{"effect":de.DictionaryEffect, "args":{"state":"0000111000000000000000000111000O"} },
@@ -147,7 +150,7 @@ mode0_keymap = {
         69:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111"} }
         }
 
-mode1_keymap = {
+keymap_1 = {
         72:{"effect":de.DictionaryEffect, "args":{"state":"00001111111100000000111111110000"} },
         80:{"effect":de.DictionaryEffect, "args":{"state":"11111111000000001111111100000000"} },
         68:{"effect":de.DictionaryEffect, "args":{"state":"00000000111111110000000011111111"} },
@@ -162,7 +165,7 @@ mode1_keymap = {
             }
         }
 
-mode2_keymap = {
+keymap_2 = {
         98:{
             "effect":de.DictionaryEffect,
             "args":{
@@ -214,7 +217,7 @@ mode2_keymap = {
             }
         }
 
-mode3_keymap = {
+keymap_3 = {
         69:{
             "effect":de.DictionaryEffect,
             "args":{
@@ -294,10 +297,10 @@ mode3_keymap = {
             },
         }
 
-mode4_keymap = {
+keymap_4 = {
         }
 
-mode5_keymap = {
+keymap_5 = {
         "86": {
             "effect":cre.CrashEffect,
             "args":{
@@ -307,14 +310,62 @@ mode5_keymap = {
             }
         }
 
-mode6_keymap = {
+keymap_6 = {
 
         }
 
-key_maps = [mode0_keymap,mode1_keymap,mode2_keymap,mode3_keymap,mode4_keymap,mode5_keymap,mode6_keymap];
+keymap_7 = {
+
+        }
+
+keymap_8 = {
+
+        }
+
+keymap_9 = {
+
+        }
+
+key_maps_by_mode = [
+        keymap_0, # 0
+        keymap_1, # 1
+        keymap_2, # 2
+        keymap_0, # 3
+        keymap_3, # 4
+        keymap_4, # 5
+        keymap_0, # 6
+        keymap_3, # 7
+        keymap_9, # 8  # 3 pulses of clusters of notes
+        keymap_5, # 9  #
+        keymap_6, # 10 
+        keymap_0, # 11
+        keymap_3, # 12
+        keymap_7, # 13 # Modified for synth
+        keymap_8, # 14 # Modified for synth
+        keymap_8, # 15 # Modified for synth
+        ];
+
+key_maps_by_mode = [
+        keymap_0, # 0
+        keymap_1, # 1
+        keymap_2, # 2
+        keymap_0, # 3
+        keymap_3, # 4
+        keymap_4, # 5
+        keymap_0, # 6
+        keymap_3, # 7
+        keymap_9, # 8  # 3 pulses of clusters of notes
+        keymap_5, # 9  #
+        keymap_6, # 10 
+        keymap_0, # 11
+        keymap_3, # 12
+        keymap_7, # 13 # Modified for synth
+        keymap_8, # 14 # Modified for synth
+        keymap_8, # 15 # Modified for synth
+        ];
 
 if keyboard_toggle:
-    key_maps[0] = {
+    key_maps_by_mode[0] = {
         89:{"effect":de.DictionaryEffect, "args":{"state":"11000000000000000000000000000011","on_color":(255,0,255)} },
         79:{
             "effect":fme.FadeMarquisEffect,
@@ -338,6 +389,7 @@ class Controller(threading.Thread):
         self.quit = False
         self.circle_state = 0
         self.mode = 0
+        self.global_channel = 15
 
 
     def mode_to_pin(self,mode):
@@ -359,15 +411,14 @@ class Controller(threading.Thread):
 
 
     def switch_mode(self,d):
-        old_pin = self.mode_to_pin(self.mode)
+        # old_pin = self.mode_to_pin(self.mode)
         self.mode = d
-        pin = self.mode_to_pin(self.mode)
+        # pin = self.mode_to_pin(self.mode)
         print("Activating Mode " + str(d))
-        print("  Old Pin: " + str(old_pin))
-        print("  Pin: " + str(pin))
-
-        self.set_low(old_pin)
-        self.set_high(pin)
+        # print("  Old Pin: " + str(old_pin))
+        # print("  Pin: " + str(pin))
+        # self.set_low(old_pin)
+        # self.set_high(pin)
 
 
     def set_high(self,pin):       #  TO DO:  Change to use standard gpiozero LED class and led.on functions
@@ -398,12 +449,16 @@ class Controller(threading.Thread):
                 note = msg.getNoteNumber()
                 vel = msg.getVelocity()
                 chn = msg.getChannel()
+                self.global_key = False
                 toggle = False
                 if chn == 7:
                     toggle = True
                 if chn == 9:
                     toggle = True
                 if chn == 14:
+                    toggle = True
+                if chn == self.global_channel:
+                    self.global_key = True
                     toggle = True
                 if keyboard_toggle: ## Just for practice with keyboard
                     toggle = True
@@ -419,10 +474,11 @@ class Controller(threading.Thread):
         global effect
         print("Note", note,vel)
 
-        cur_map = key_maps[self.mode]
-        if note in global_mode_keymap:
-            self.switch_mode(global_mode_keymap[note]["mode"])
-        if note in cur_map:
+        cur_map = key_maps_by_mode[self.mode]
+        if self.global_key:
+            if note in global_mode_keymap:
+                self.switch_mode(global_mode_keymap[note]["mode"])
+        elif note in cur_map:
             cur_effect = cur_map[note]
             effect = cur_effect["effect"](vel, pixels, num_pixels, cur_effect["args"])
 
