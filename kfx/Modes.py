@@ -12,7 +12,9 @@ import board
 import neopixel
 import RPi.GPIO as GPIO
 import numpy as np
-from gpiozero import LED
+import math
+from gpiozero import Button
+from Adafruit_LED_Backpack.SevenSegment import SevenSegment
 
 
 # My Locally defined libraries
@@ -36,83 +38,19 @@ from_wait = 0.2
 to_wait = 0.001
 max_ti = 10
 
-pinout_dict = [
-        "",
-        "3V",
-        "5V",
-        2,
-        "5V",
-        3,
-        "Ground",
-        4,
-        14, 
-        "Ground",
-        15, 
-        17, # Mode 0 +
-        18,
-        27, # Mode 1 +
-        "Ground",
-        22, # Mode 2 + 
-        23,
-        "3V",
-        24,
-        10, # Mode 3 +
-        "Ground",
-        9, # Mode 4 +
-        25,
-        11, # Mode 5 +
-        8,
-        "Ground",
-        7,
-        "SD",
-        "SC",
-        5,
-        "Ground",
-        6,
-        12,
-        13,
-        "Ground",
-        19,
-        16,
-        26,
-        20,
-        "Ground",
-        21
-        ]
-
-
-# PINOUT Setup for LEDs
-GPIO.setup(pinout_dict[11],GPIO.OUT) # 0 HIGH
-GPIO.setup(pinout_dict[12],GPIO.OUT) # 0 LOW
-GPIO.setup(pinout_dict[13],GPIO.OUT) # 1 HIGH
-GPIO.setup(pinout_dict[15],GPIO.OUT) # 2 HIGH
-GPIO.setup(pinout_dict[16],GPIO.OUT) # 2 LOW
-GPIO.setup(pinout_dict[19],GPIO.OUT) # 4 HIGH
-GPIO.setup(pinout_dict[21],GPIO.OUT) # 5 HIGH
-GPIO.setup(pinout_dict[22],GPIO.OUT) # 5 LOW
-GPIO.setup(pinout_dict[23],GPIO.OUT) # 6 HIGH
-GPIO.setup(pinout_dict[24],GPIO.OUT) # 6 LOW
-GPIO.output(pinout_dict[11],0)
-GPIO.output(pinout_dict[12],0)
-GPIO.output(pinout_dict[13],0)
-GPIO.output(pinout_dict[15],0)
-GPIO.output(pinout_dict[16],0)
-GPIO.output(pinout_dict[19],0)
-GPIO.output(pinout_dict[21],0)
-GPIO.output(pinout_dict[22],0)
-GPIO.output(pinout_dict[23],0)
-GPIO.output(pinout_dict[24],0)
-
-#         00000000001111111111222222222233
-#         01234567890123456789012345678901
-#"state":"11000000000000000000000000000011"
-#"state":"0011000000000000000000000000110O"
-#"state":"0000111000000000000000000111000O"
-#"state":"0000000110000000000000011000000O"
-#"state":"0000000001110000000011100000000O"
-#"state":"0000000000001100001100000000000O"
-#"state":"11111111111111111111111111111111"
-
+## Seven segment display dictionary
+ssd_dictionary = {
+        0:{0x3f},
+        1:{0x06},
+        2:{0x5b},
+        3:{0x4f},
+        4:{0x66},
+        5:{0x6d},
+        6:{0x7d},
+        7:{0x07},
+        8:{0x7f},
+        9:{0x6f}
+    }
 # This code is an attempt at fitting mode changes into this part
 global_mode_keymap = {
         60:{"mode":0},
@@ -345,7 +283,7 @@ key_maps_by_mode = [
         keymap_8, # 15 # Modified for synth
         ];
 
-key_maps_by_mode = [
+key_maps_by_mode_clock_song = [
         keymap_0, # 0
         keymap_1, # 1
         keymap_2, # 2
@@ -363,6 +301,15 @@ key_maps_by_mode = [
         keymap_8, # 14 # Modified for synth
         keymap_8, # 15 # Modified for synth
         ];
+
+key_maps_by_mode_black_hole = [
+        keymap_0, # 0
+    ];
+
+key_map_arrays_by_song = [
+        key_maps_by_mode_clock_song,
+        key_maps_by_mode_black_hole
+    ];
 
 if keyboard_toggle:
     key_maps_by_mode[0] = {
@@ -389,61 +336,74 @@ class Controller(threading.Thread):
         self.quit = False
         self.circle_state = 0
         self.mode = 0
+        self.song = 0
+        self.display = SevenSegment()
         self.global_channel = 15
+        self.button_debounce = 10
+        self.increment_button = Button(16)
+        self.decrement_button = Button(19)
+        self.reset_button = Button(20)
+        self.song_switch_button = Button(26)
+        self.previous_increment_state = False
+        self.previous_decrement_state = False
+        self.previous_reset_state= False
+        self.previous_song_switch_state= False
 
-
-    def mode_to_pin(self,mode):
-        if mode > 5:
-            print("Mode should be between 0 and 6 inclusive")
-            return
-        if mode == 0:
-            return(11)
-        if mode == 1:
-            return(13)
-        if mode == 2:
-            return(15)
-        if mode == 3:
-            return(19)
-        if mode == 4:
-            return(21)
-        if mode == 5:
-            return(23)
-
+    def test_button(self):
+        increment_button_state = self.increment_button.is_pressed
+        decrement_button_state = self.decrement_button.is_pressed
+        reset_button_state = self.reset_button.is_pressed
+        song_switch_button_state = self.song_switch_button.is_pressed
+        if increment_button_state:
+            self.previous_increment_state = self.previous_increment_state + 1
+            if self.previous_increment_state == self.button_debounce:
+                print("ib")
+                self.switch_mode(self.mode+1)
+        else:
+            self.previous_increment_state = 0
+        if decrement_button_state:
+            self.previous_decrement_state = self.previous_decrement_state + 1
+            if self.previous_decrement_state == self.button_debounce:
+                print("db")
+                self.switch_mode(self.mode-1)
+        else:
+            self.previous_decrement_state = 0
+        if reset_button_state:
+            self.previous_reset_state = self.previous_reset_state + 1
+            if self.previous_reset_state == self.button_debounce:
+                print("rb")
+                self.switch_mode(0)
+        else:
+            self.previous_reset_state = 0
+        if song_switch_button_state:
+            self.previous_song_switch_state = self.previous_song_switch_state + 1
+            if self.previous_song_switch_state == self.button_debounce:
+                print("ssb")
+                self.switch_song()
+        else:
+            self.previous_song_switch_state = 0
 
     def switch_mode(self,d):
-        # old_pin = self.mode_to_pin(self.mode)
+        d = d % len(key_map_arrays_by_song[self.song])
         self.mode = d
-        # pin = self.mode_to_pin(self.mode)
         print("Activating Mode " + str(d))
-        # print("  Old Pin: " + str(old_pin))
-        # print("  Pin: " + str(pin))
-        # self.set_low(old_pin)
-        # self.set_high(pin)
+        self.display.set_digit(3,math.floor(d/10))
+        self.display.set_digit(4,d % 10)
+        ## Enable Mode Light
 
-
-    def set_high(self,pin):       #  TO DO:  Change to use standard gpiozero LED class and led.on functions
-        pin = pinout_dict[pin]    #          also change method to "on" and "off"
-        print(pin)
-        if(isinstance(pin,str)):
-            return
-        
-        GPIO.output(pin,1)
-
-
-    def set_low(self,pin):
-        pin = pinout_dict[pin]
-        print(pin)
-        if(isinstance(pin,str)):
-            return
-
-        GPIO.output(pin,0)
-
+    def switch_song(self):
+        self.song = 1-self.song
+        self.switch_mode(0)
+        self.display.set_digit(0,self.song)
+        print("Activating Song " + str(self.song))
+        ## Enable Song Light
 
     def run(self):
         global effect
         self.device.openPort(self.port)
         self.device.ignoreTypes(True, False, True)
         while True:
+            self.test_button()
             msg = self.device.getMessage()
             if msg:
                 note = msg.getNoteNumber()
@@ -474,7 +434,8 @@ class Controller(threading.Thread):
         global effect
         print("Note", note,vel)
 
-        cur_map = key_maps_by_mode[self.mode]
+        # cur_map = key_maps_by_mode[self.mode]
+        cur_map = key_map_arrays_by_song[self.song][self.mode]
         if self.global_key:
             if note in global_mode_keymap:
                 self.switch_mode(global_mode_keymap[note]["mode"])
