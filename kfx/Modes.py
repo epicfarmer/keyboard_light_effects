@@ -335,15 +335,17 @@ class Controller(threading.Thread):
         self.device = device
         self.quit = False
         self.circle_state = 0
-        self.mode = 0
-        self.song = 0
         self.display = SevenSegment()
+        self.display.begin()
+        self.display.clear()
+        self.song = 1
+        self.switch_song()
         self.global_channel = 15
         self.button_debounce = 10
-        self.increment_button = Button(16)
-        self.decrement_button = Button(19)
-        self.reset_button = Button(20)
-        self.song_switch_button = Button(26)
+        self.increment_button = Button(20,pull_up = True)
+        self.decrement_button = Button(26,pull_up = True)
+        self.reset_button = Button(19,pull_up = True)
+        self.song_switch_button = Button(16,pull_up = True)
         self.previous_increment_state = False
         self.previous_decrement_state = False
         self.previous_reset_state= False
@@ -387,14 +389,16 @@ class Controller(threading.Thread):
         d = d % len(key_map_arrays_by_song[self.song])
         self.mode = d
         print("Activating Mode " + str(d))
-        self.display.set_digit(3,math.floor(d/10))
-        self.display.set_digit(4,d % 10)
+        self.display.set_digit(2,math.floor(d/10))
+        self.display.set_digit(3,d % 10)
+        self.display.write_display()
         ## Enable Mode Light
 
     def switch_song(self):
         self.song = 1-self.song
         self.switch_mode(0)
         self.display.set_digit(0,self.song)
+        self.display.write_display()
         print("Activating Song " + str(self.song))
         ## Enable Song Light
 
