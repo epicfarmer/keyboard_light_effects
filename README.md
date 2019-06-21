@@ -6,6 +6,8 @@ This package is intended to allow the user to render a variety of lighting effec
 ### High Frequency Flash
 ### Static Random Blotches
 ### Segmented Cycle
+### Dictionary Effect
+### Marquis Effect
 
 ## Current Limitations
 ### Synchronicity
