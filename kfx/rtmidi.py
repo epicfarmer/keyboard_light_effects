@@ -47,8 +47,9 @@ class MidiToEvents(MidiEvents):
     # #########################
 
 class RtMidiIn():
-    def __init__(self):
+    def __init__(self,testing=True):
         super().__init__()
+        self.testing = testing
         filename = "/home/jkaminsky/Downloads/07 Clock Song-46-all-instruments.mid"
         filename = "/home/jkaminsky/Downloads/07 Clock Song-46-synth-and-modes.mid"
         import mxm.midifile as midi
@@ -58,24 +59,42 @@ class RtMidiIn():
         a.getMessage()
         b.read()
         self.events = a.getEvents()
-        ## For testing:
-#         self.events = [
-#                 [762000,6,89,100,True],
-#                 [762200,6,89,100,False],
-#                 [762400,6,87,100,True],
-#                 [762600,6,87,100,False],
-#                 [762800,6,82,100,True],
-#                 [763000,6,82,100,False],
-#                 [763200,6,81,100,True],
-#                 [763400,6,81,100,False],
-#                 [763600,6,71,100,True],
-#                 [763800,6,71,100,False],
-#                 [764000,6,67,100,True],
-#                 [764200,6,67,100,False],
-#                 [764400,6,69,100,True],
-#                 [764600,6,69,100,False],
-# 
-#         ]
+        if(self.testing):
+            self.events = [
+                [762000,15,0,100,True],
+                [762000,15,0,100,True],
+                [762000,6,61,100,True],
+                [762200,6,62,100,True],
+                [762400,6,63,100,True],
+                [762600,6,64,100,True],
+                [762800,6,65,100,True],
+                [763000,6,66,100,True],
+                [763200,6,67,100,True],
+                [763400,6,68,100,True],
+                [763600,6,69,100,True],
+                [763800,6,70,100,True],
+                [764000,6,71,100,True],
+                [764200,6,72,100,True],
+                [764400,6,73,100,True],
+                [764600,6,74,100,True],
+                [764800,6,75,100,True],
+                [765000,6,76,100,True],
+                [765200,6,77,100,True],
+                [765400,6,78,100,True],
+                [765600,6,79,100,True],
+                [765800,6,80,100,True],
+                [766000,6,81,100,True],
+                [766200,6,82,100,True],
+                [766400,6,83,100,True],
+                [766600,6,84,100,True],
+                [766800,6,85,100,True],
+                [767000,6,86,100,True],
+                [767200,6,87,100,True],
+                [767400,6,88,100,True],
+                [767600,6,89,100,True],
+                [767800,6,90,100,True],
+
+            ]
         self.start_time = time.time()
         self.last_time = time.time() - 1
         self.event_index = 0
