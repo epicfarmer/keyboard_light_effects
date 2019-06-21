@@ -76,7 +76,7 @@ class Controller(threading.Thread):
         self.display = SevenSegment()
         self.display.begin()
         self.display.clear()
-        self.song = 1
+        self.song = 2
         self.switch_song()
         self.global_channel = 15
         self.button_debounce = 10
@@ -118,7 +118,7 @@ class Controller(threading.Thread):
         if song_switch_button_state:
             self.previous_song_switch_state = self.previous_song_switch_state + 1
             if self.previous_song_switch_state == self.button_debounce:
-                print("ssb")
+                print("sb")
                 self.switch_song()
         else:
             self.previous_song_switch_state = 0
@@ -133,7 +133,8 @@ class Controller(threading.Thread):
         ## Enable Mode Light
 
     def switch_song(self):
-        self.song = 1-self.song
+        self.song = 1+self.song
+        self.song = self.song % len(key_map_arrays_by_song)
         self.switch_mode(0)
         self.display.set_digit(0,self.song)
         self.display.write_display()
@@ -180,7 +181,10 @@ class Controller(threading.Thread):
         cur_map = key_map_arrays_by_song[self.song][self.mode]
         if self.global_key:
             if note in global_mode_keymap:
-                self.switch_mode(global_mode_keymap[note]["mode"])
+                if "mode" in global_mode_keymap[note]:
+                    self.switch_mode(global_mode_keymap[note]["mode"])
+                if "song" in global_mode_keymap[note]:
+                    self.switch_song()
         elif note in cur_map:
             cur_effect = cur_map[note]
             effect = cur_effect["effect"](vel, pixels, num_pixels, cur_effect["args"])
