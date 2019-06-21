@@ -5,7 +5,7 @@ import math
 class DictionaryEffect():
     def __init__(self,velocity,pixels,n_pixels,args):
         self.off_color = (0,0,0)
-        self.delay = 0.001
+        self.delay = 0.01
         self.num_states = 32
         self.isOn = False
         self.isClosed = False

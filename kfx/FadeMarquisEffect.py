@@ -8,7 +8,7 @@ class FadeMarquisEffect():
         self.flashing = False
         self.color1 = (155,255,155)
         self.color2 = (0,0,0)
-        self.delay = 0.001
+        self.delay = 0.01
         self.isOn = False
         self.isClosed = False
         self.pixels = pixels

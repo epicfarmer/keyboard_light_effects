@@ -5,7 +5,7 @@ class FlashEffect():
         self.flashing = False
         self.flash_color = (255,150,0)
         self.off_color = (0,0,0)
-        self.delay = 0.001
+        self.delay = 0.01
         self.isOn = False
         self.isClosed = False
         self.pixels = pixels

@@ -5,16 +5,14 @@
 ## For playing with keyboard
 keyboard_toggle = False
 
-import piplates.RELAYplate as RELAY
 import rtmidi
 import threading
 import board
 import neopixel
-import RPi.GPIO as GPIO
 import numpy as np
 import math
-from gpiozero import Button
-from Adafruit_LED_Backpack.SevenSegment import SevenSegment
+# from Adafruit_LED_Backpack.SevenSegment import SevenSegment
+from SevenSegment import SevenSegment
 
 
 # My Locally defined libraries
@@ -30,7 +28,7 @@ import FadeMarquisEffect as fme
 dev = rtmidi.RtMidiIn()
 collectors = []
 pixel_pin = board.D18
-num_pixels = 150
+num_pixels = 32
 brightness = 0.7
 wait = 0.003
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, auto_write=False)
@@ -80,12 +78,12 @@ global_mode_keymap = {
 ## debug_global_mode
 keymap_0 = {
         89:{"effect":de.DictionaryEffect, "args":{"state":"11000000000000000000000000000011","on_color":(255,0,255)} },
-        87:{"effect":de.DictionaryEffect, "args":{"state":"0011000000000000000000000000110O"} },
-        82:{"effect":de.DictionaryEffect, "args":{"state":"0000111000000000000000000111000O"} },
-        81:{"effect":de.DictionaryEffect, "args":{"state":"0000000110000000000000011000000O"} },
-        71:{"effect":de.DictionaryEffect, "args":{"state":"0000000001110000000011100000000O"} },
-        67:{"effect":de.DictionaryEffect, "args":{"state":"0000000000001100001100000000000O"} },
-        69:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111"} }
+        87:{"effect":de.DictionaryEffect, "args":{"state":"0011000000000000000000000000110O","on_color":(255,0,255)} },
+        82:{"effect":de.DictionaryEffect, "args":{"state":"0000111000000000000000000111000O","on_color":(255,0,255)} },
+        81:{"effect":de.DictionaryEffect, "args":{"state":"0000000110000000000000011000000O","on_color":(255,0,255)} },
+        71:{"effect":de.DictionaryEffect, "args":{"state":"0000000001110000000011100000000O","on_color":(255,0,255)} },
+        67:{"effect":de.DictionaryEffect, "args":{"state":"0000000000001100001100000000000O","on_color":(255,0,255)} },
+        69:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(250,250,250)} }
         }
 
 keymap_1 = {
@@ -99,7 +97,7 @@ keymap_1 = {
                 "transition_time" : 3.5,
                 "color1" : (155,255,155),
                 "color2" : (0,0,0)
-                } 
+                }
             }
         }
 
@@ -275,7 +273,7 @@ key_maps_by_mode = [
         keymap_3, # 7
         keymap_9, # 8  # 3 pulses of clusters of notes
         keymap_5, # 9  #
-        keymap_6, # 10 
+        keymap_6, # 10
         keymap_0, # 11
         keymap_3, # 12
         keymap_7, # 13 # Modified for synth
@@ -294,7 +292,7 @@ key_maps_by_mode_clock_song = [
         keymap_3, # 7
         keymap_9, # 8  # 3 pulses of clusters of notes
         keymap_5, # 9  #
-        keymap_6, # 10 
+        keymap_6, # 10
         keymap_0, # 11
         keymap_3, # 12
         keymap_7, # 13 # Modified for synth
@@ -320,7 +318,7 @@ if keyboard_toggle:
                 "transition_time" : 3.5,
                 "color1" : (155,255,155),
                 "color2" : (0,0,0)
-            } 
+            }
         }
     }
 
@@ -342,16 +340,17 @@ class Controller(threading.Thread):
         self.switch_song()
         self.global_channel = 15
         self.button_debounce = 10
-        self.increment_button = Button(20,pull_up = True)
-        self.decrement_button = Button(26,pull_up = True)
-        self.reset_button = Button(19,pull_up = True)
-        self.song_switch_button = Button(16,pull_up = True)
+        # self.increment_button = Button(20,pull_up = True)
+        # self.decrement_button = Button(26,pull_up = True)
+        # self.reset_button = Button(19,pull_up = True)
+        # self.song_switch_button = Button(16,pull_up = True)
         self.previous_increment_state = False
         self.previous_decrement_state = False
         self.previous_reset_state= False
         self.previous_song_switch_state= False
 
     def test_button(self):
+        return
         increment_button_state = self.increment_button.is_pressed
         decrement_button_state = self.decrement_button.is_pressed
         reset_button_state = self.reset_button.is_pressed
@@ -415,6 +414,8 @@ class Controller(threading.Thread):
                 chn = msg.getChannel()
                 self.global_key = False
                 toggle = False
+                if chn == 6:
+                    toggle = True
                 if chn == 7:
                     toggle = True
                 if chn == 9:
@@ -457,10 +458,10 @@ effect = ne.NoEffect(pixels,num_pixels)
 
 for i in range(dev.getPortCount()):
     device = rtmidi.RtMidiIn()
-    
+
     name = dev.getPortName(i)
     print("PORT: " + name)
-    
+
     if "UM-ONE" in name:
         collector = Controller(device, i)
         collector.start()
@@ -469,10 +470,7 @@ for i in range(dev.getPortCount()):
 isOn = False
 while True:
     effect.beat()
+    pixels.refresh()
 
 for c in collectors:
     c.quit = True
-
-
-
-
