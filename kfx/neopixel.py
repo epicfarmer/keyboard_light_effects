@@ -41,10 +41,11 @@ class NeoPixel():
         pass
 
     def color_rgb(self,r,g,b):
-        return "#%2X%2X%2X" % (r,g,b)
+        return self.color((r,g,b))
 
     def color(self,t):
-        return "#%02X%02X%02X" % (t[0], t[1], t[2])
+        t = self.fake_color(t)
+        return "#%02X%02X%02X" % (t[0],t[1],t[2])
 
     def fill(self,this_color):
         for i in range(0, self.num_pixels):
@@ -56,3 +57,13 @@ class NeoPixel():
 
     def __setitem__(self, key, val):
         self.led_colors[key] = self.color(val)
+
+    def fake_color(self,color,n=100,k=2):
+        color = [color[0],color[1],color[2]]
+        if(color[0] > k*n):
+            color[0] = int((color[0] - k*n) / 2 + k*n)
+        if(color[1] > k*n):
+            color[1] = int((color[1] - k*n ) / 2 + k*n)
+        if(color[2] > n):
+            color[2] = int((color[2] - n ) / 2 + n)
+        return(color)
