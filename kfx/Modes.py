@@ -11,9 +11,12 @@ import board
 import neopixel
 import numpy as np
 import math
+import time
 # from Adafruit_LED_Backpack.SevenSegment import SevenSegment
 from SevenSegment import SevenSegment
 
+global graphics_lock
+graphics_lock = threading.Lock()
 
 # My Locally defined libraries
 import utils
@@ -28,7 +31,7 @@ import FadeMarquisEffect as fme
 dev = rtmidi.RtMidiIn()
 collectors = []
 pixel_pin = board.D18
-num_pixels = 32
+num_pixels = 300
 brightness = 0.7
 wait = 0.003
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, auto_write=False)
@@ -446,15 +449,23 @@ class Controller(threading.Thread):
                 self.switch_mode(global_mode_keymap[note]["mode"])
         elif note in cur_map:
             cur_effect = cur_map[note]
+            global graphics_lock
+            graphics_lock.acquire()
             effect = cur_effect["effect"](vel, pixels, num_pixels, cur_effect["args"])
+            graphics_lock.release()
 
 
     def key_released(self,note,mode):
         global effect
+        global graphics_lock
+        graphics_lock.acquire()
         effect.close()
         effect = ne.NoEffect(pixels,num_pixels)
+        graphics_lock.release()
 
+graphics_lock.acquire()
 effect = ne.NoEffect(pixels,num_pixels)
+graphics_lock.release()
 
 for i in range(dev.getPortCount()):
     device = rtmidi.RtMidiIn()
@@ -468,9 +479,13 @@ for i in range(dev.getPortCount()):
         collectors.append(collector)
 
 isOn = False
-while True:
+start_time = time.time()
+while((time.time() - start_time) < 20):
+    graphics_lock.acquire()
     effect.beat()
     pixels.refresh()
+    graphics_lock.release()
+    time.sleep(0.001)
 
 for c in collectors:
     c.quit = True

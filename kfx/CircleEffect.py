@@ -6,7 +6,7 @@ import math
 class CircleEffect():
     def __init__(self,velocity,pixels,n_pixels,args):
         self.off_color = (0,0,0)
-        self.delay = 0.01
+        self.delay = 0.001
         self.num_states = 7
         self.state = args["state"]
         self.isOn = False

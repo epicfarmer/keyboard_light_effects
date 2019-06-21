@@ -59,23 +59,23 @@ class RtMidiIn():
         b.read()
         self.events = a.getEvents()
         ## For testing:
-        self.events = [
-                [762000,6,89,100,True],
-                [762200,6,89,100,False],
-                [762400,6,87,100,True],
-                [762600,6,87,100,False],
-                [762800,6,82,100,True],
-                [763000,6,82,100,False],
-                [763200,6,81,100,True],
-                [763400,6,81,100,False],
-                [763600,6,71,100,True],
-                [763800,6,71,100,False],
-                [764000,6,67,100,True],
-                [764200,6,67,100,False],
-                [764400,6,69,100,True],
-                [764600,6,69,100,False],
-
-        ]
+#         self.events = [
+#                 [762000,6,89,100,True],
+#                 [762200,6,89,100,False],
+#                 [762400,6,87,100,True],
+#                 [762600,6,87,100,False],
+#                 [762800,6,82,100,True],
+#                 [763000,6,82,100,False],
+#                 [763200,6,81,100,True],
+#                 [763400,6,81,100,False],
+#                 [763600,6,71,100,True],
+#                 [763800,6,71,100,False],
+#                 [764000,6,67,100,True],
+#                 [764200,6,67,100,False],
+#                 [764400,6,69,100,True],
+#                 [764600,6,69,100,False],
+# 
+#         ]
         self.start_time = time.time()
         self.last_time = time.time() - 1
         self.event_index = 0
@@ -90,7 +90,7 @@ class RtMidiIn():
         pass
 
     def getMessage(self):
-        current_time = (time.time() - self.start_time)* 200 + 762000
+        current_time = (time.time() - self.start_time)* 1000 + 762000
         if(len(self.events) > self.event_index):
             if(self.events[self.event_index][0] < current_time):
                 self.event_index = self.event_index + 1
@@ -101,6 +101,8 @@ class RtMidiIn():
                     self.events[self.event_index-1][3],
                     self.events[self.event_index-1][4]
                     ))
+        else:
+            raise(Exception("Song over"))
 
     def getPortCount(self):
         return(1)
