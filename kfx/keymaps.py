@@ -5,7 +5,39 @@ import CircleEffect as cie
 import DictionaryEffect as de
 import FadeMarquisEffect as fme
 
+testing_keymap = {
+        61:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,0,0)} },
+        62:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,0,0)} },
+        63:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,255,0)} },
+        64:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,0,255)} },
+        65:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,255,0)} },
+        66:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,0,255)} },
+        67:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,255,255)} },
+        68:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,255,255)} },
+        69:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,0,0)} },
+        70:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,124,0)} },
+        71:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,0,124)} },
+        72:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,255,0)} },
+        73:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,124,0)} },
+        74:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,124,0)} },
+        75:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,0,255)} },
+        76:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,0,124)} },
+        77:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,0,124)} },
+        78:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,124,255)} },
+        79:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,255,124)} },
+        80:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(0,124,124)} },
+        81:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,124,124)} },
+        82:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,255,124)} },
+        83:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,124,255)} },
+        84:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(124,255,255)} },
+        85:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,124,124)} },
+        86:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,255,124)} },
+        87:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,124,255)} },
+        88:{"effect":de.DictionaryEffect, "args":{"state":"11111111111111111111111111111111","on_color":(255,255,255)} }
+        }
+
 global_mode_keymap = {
+        0:{"song":"next"},
         60:{"mode":0},
         61:{"mode":1},
         62:{"mode":2},
@@ -253,14 +285,19 @@ key_maps_by_mode_clock_song = [
         keymap_7, # 13 # Modified for synth
         keymap_8, # 14 # Modified for synth
         keymap_8, # 15 # Modified for synth
-        ];
+   ];
 
 key_maps_by_mode_black_hole = [
         keymap_0, # 0
     ];
 
+key_maps_by_mode_testing = [
+        testing_keymap
+    ];
+
 key_map_arrays_by_song = [
         key_maps_by_mode_clock_song,
-        key_maps_by_mode_black_hole
+        key_maps_by_mode_black_hole,
+        key_maps_by_mode_testing
     ];
 
