@@ -15,6 +15,9 @@ import time
 # from Adafruit_LED_Backpack.SevenSegment import SevenSegment
 from SevenSegment import SevenSegment
 
+from keymaps import *
+import NoEffect as ne
+
 global graphics_lock
 graphics_lock = threading.Lock()
 
@@ -29,6 +32,7 @@ num_pixels = 300
 brightness = 0.7
 wait = 0.003
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, auto_write=False)
+
 from_wait = 0.2
 to_wait = 0.001
 max_ti = 10
