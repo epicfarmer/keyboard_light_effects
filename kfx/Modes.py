@@ -13,8 +13,9 @@ import neopixel
 import RPi.GPIO as GPIO
 import numpy as np
 import math
-from gpiozero import Button
-from Adafruit_LED_Backpack.SevenSegment import SevenSegment
+
+from keymaps import *
+import NoEffect as ne
 
 
 # My Locally defined libraries
@@ -28,6 +29,7 @@ num_pixels = 150
 brightness = 0.7
 wait = 0.003
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, auto_write=False)
+
 from_wait = 0.2
 to_wait = 0.001
 max_ti = 10
@@ -56,7 +58,7 @@ if keyboard_toggle:
                 "transition_time" : 3.5,
                 "color1" : (155,255,155),
                 "color2" : (0,0,0)
-            } 
+            }
         }
     }
 
@@ -193,10 +195,10 @@ effect = ne.NoEffect(pixels,num_pixels)
 
 for i in range(dev.getPortCount()):
     device = rtmidi.RtMidiIn()
-    
+
     name = dev.getPortName(i)
     print("PORT: " + name)
-    
+
     if "UM-ONE" in name:
         collector = Controller(device, i)
         collector.start()
@@ -208,7 +210,3 @@ while True:
 
 for c in collectors:
     c.quit = True
-
-
-
-
