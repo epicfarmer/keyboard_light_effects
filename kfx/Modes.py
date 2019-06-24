@@ -12,6 +12,8 @@ import neopixel
 import numpy as np
 import math
 import time
+import pysine
+import asyncio as sync
 # from Adafruit_LED_Backpack.SevenSegment import SevenSegment
 from SevenSegment import SevenSegment
 
@@ -81,7 +83,7 @@ class Controller(threading.Thread):
         self.display.clear()
         self.song = 2
         self.switch_song()
-        self.global_channel = 15
+        self.global_channel = 14
         self.button_debounce = 10
         # self.increment_button = Button(20,pull_up = True)
         # self.decrement_button = Button(26,pull_up = True)
@@ -224,7 +226,8 @@ for i in range(dev.getPortCount()):
 
 isOn = False
 start_time = time.time()
-while((time.time() - start_time) < 20):
+# while((time.time() - start_time) < 360):
+while(True):
     graphics_lock.acquire()
     effect.beat()
     pixels.refresh()
