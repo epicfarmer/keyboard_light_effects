@@ -35,23 +35,33 @@ class MidiToEvents(MidiEvents):
     # channel events
 
     def note_on(self, channel=0, note=0x40, velocity=0x40, use_running_status=False):
-         self.events.append((self.time,channel,note,velocity,True))
+        if(channel != 6):
+            print(("HERE",channel,note,velocity,use_running_status))
+        self.events.append((self.time,channel,note,velocity,True))
 
     def note_off(self, channel=0, note=0x40, velocity=0x40, use_running_status=False):
+        if(channel != 6):
+            print(("HERE",channel,note,velocity,use_running_status))
         self.events.append((self.time,channel,note,velocity,False))
 
+    def end_of_track(self):
+        self.time = 0;
+
     def update_time(self,new_time,relative):
+        if(relative):
+            self.time = self.time + new_time
+        else:
+            self.time = new_time
         # print(relative)
-        self.time = self.time + new_time
 
     # #########################
 
 class RtMidiIn():
-    def __init__(self,testing=True):
+    def __init__(self,testing=False):
         super().__init__()
         self.testing = testing
-        filename = "/home/jkaminsky/Downloads/07 Clock Song-46-all-instruments.mid"
         filename = "/home/jkaminsky/Downloads/07 Clock Song-46-synth-and-modes.mid"
+        # filename = "/home/jkaminsky/Downloads/07 Clock Song-46-all-instruments.mid"
         import mxm.midifile as midi
         a = MidiToEvents()
         b = midi.MidiInFile(a,filename)
@@ -59,6 +69,8 @@ class RtMidiIn():
         a.getMessage()
         b.read()
         self.events = a.getEvents()
+        self.sort_events()
+        # print(self.events)
         if(self.testing):
             self.events = [
                 [762000,15,0,100,True],
@@ -108,12 +120,17 @@ class RtMidiIn():
     def ignoreTypes(self,a,b,c):
         pass
 
+    def sort_events(self):
+        self.events = sorted(self.events,key = lambda event:event[0])
+
     def getMessage(self):
-        current_time = (time.time() - self.start_time)* 1000 + 762000
+        current_time = (time.time() - self.start_time)* 1000 + 40000
         if(len(self.events) > self.event_index):
             if(self.events[self.event_index][0] < current_time):
+                if(self.events[self.event_index][1] != 6):
+                    print("HERE")
                 self.event_index = self.event_index + 1
-                print(self.events[self.event_index - 1])
+                # print(self.events[self.event_index - 1])
                 return(Message(
                     self.events[self.event_index-1][1],
                     self.events[self.event_index-1][2],
@@ -122,6 +139,9 @@ class RtMidiIn():
                     ))
         else:
             raise(Exception("Song over"))
+
+    def __getitem__(self, key):
+        return(self.events[key][0])
 
     def getPortCount(self):
         return(1)
